@@ -10,6 +10,11 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -27,23 +32,20 @@ public class MainActivity extends AppCompatActivity {
         final EditText searchEditText = (EditText) findViewById(R.id.search_edit_text);
         ImageButton searchImageButton = (ImageButton) findViewById(R.id.search_button);
 
+        questions = new ArrayList<>();
+        questionListView = (ListView) findViewById(R.id.question_list_view);
+
         searchImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (searchEditText.getText().toString().compareTo("") == 0) {
                     Toast.makeText(getBaseContext(), R.string.empty_search_box, Toast.LENGTH_LONG).show();
                 } else {
-                    query = searchEditText.getText().toString().replaceAll(" ","%20");
+                    query = searchEditText.getText().toString().replaceAll(" ", "%20");
                     new getQuestions().execute();
                 }
             }
         });
-
-        questions = new ArrayList<>();
-
-        questionListView = (ListView) findViewById(R.id.question_list_view);
-        MyQuestionAdapter adapter = new MyQuestionAdapter(this, questions);
-        questionListView.setAdapter(adapter);
     }
 
     private void displayQuestions() {
@@ -58,6 +60,9 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            if(questions!=null) {
+                questions.clear();
+            }
             Toast.makeText(MainActivity.this, "Fetching questions...", Toast.LENGTH_LONG).show();
         }
 
@@ -67,13 +72,61 @@ public class MainActivity extends AppCompatActivity {
             HttpHandler sh = new HttpHandler();
             //Making a request to URL and getting response
 
-            String url = "http://api.stackexchange.com/2.2/search/advanced?order=desc&max=20&sort=votes&site=stackoverflow&title=" + query;
+            String url = "http://api.stackexchange.com/2.2/search/advanced?pagesize=20&order=desc&sort=votes&site=stackoverflow&title=" + query;
             String jsonStr = sh.makeServiceCall(url);
 
             if (jsonStr != null) {
                 Log.v(TAG, jsonStr);
+                try {
+                    JSONObject root = new JSONObject(jsonStr);
+
+                    JSONArray questionsArray = root.getJSONArray("items");
+
+                    for (int i = 0; i < questionsArray.length(); i++) {
+                        JSONObject questionObject = questionsArray.getJSONObject(i);
+                        int questionID = questionObject.getInt("question_id");
+                        int score = questionObject.getInt("score");
+                        int answerCount = questionObject.getInt("answer_count");
+                        String title = questionObject.getString("title");
+                        String authorDisplayName = questionObject.optJSONObject("owner").optString("display_name");
+
+                        title = StringEscapeUtils.unescapeXml(title);
+                        authorDisplayName = StringEscapeUtils.unescapeXml(authorDisplayName);
+
+                        Question question = new Question(questionID, score, answerCount, title, authorDisplayName);
+
+                        questions.add(question);
+                    }
+                } catch (final JSONException e) {
+                    Log.e(TAG, "Json parsing error: " + e.getMessage());
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(),
+                                    "Json parsing error: " + e.getMessage(),
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
+            } else {
+                Log.e(TAG, "Couldn't get json from server.");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(),
+                                "Couldn't get json from server. Check LogCat for possible errors!",
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
             }
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+            MyQuestionAdapter adapter = new MyQuestionAdapter(MainActivity.this, questions);
+            questionListView.setAdapter(adapter);
         }
     }
 }
