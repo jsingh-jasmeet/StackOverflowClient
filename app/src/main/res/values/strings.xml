@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Stack Overflow Client</string>
+
+    <string name="search">Search</string>
+
+    <string name="votes">votes</string>
+
+    <string name="answers">answers</string>
+
+    <string name="asked_by">asked by</string>
 </resources>
