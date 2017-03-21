@@ -8,4 +8,6 @@
     <string name="answers">answers</string>
 
     <string name="asked_by">asked by</string>
+
+    <string name="empty_search_box">Please enter something in the search field</string>
 </resources>
