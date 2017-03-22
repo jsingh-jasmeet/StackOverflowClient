@@ -12,4 +12,8 @@
     <string name="empty_search_box">Please enter something in the search field</string>
 
     <string name="get_more_results">Get more results</string>
+
+    <string name="answered_by">answered by</string>
+
+    <string name="accepted_answer">Accepted Answer</string>
 </resources>

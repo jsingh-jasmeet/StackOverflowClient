@@ -12,7 +12,6 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -24,16 +23,14 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String TAG = MainActivity.class.getSimpleName();
     private static int pageCount = 0;
     private Context ctx;
-
-    private static final String TAG = MainActivity.class.getSimpleName();
     private ListView questionListView;
-    ArrayList<Question> questions;
+    private ArrayList<Question> questions;
     private String query;
-    TextView getMoreResultsTextView;
-    View footer;
-    MyQuestionAdapter adapter;
+    private View footer;
+    private MyQuestionAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,8 +77,8 @@ public class MainActivity extends AppCompatActivity {
 
                 Question question = questions.get(position);
 
-                Intent viewQuestion = new Intent(ctx,ViewQuestionActivity.class);
-                viewQuestion.putExtra("question",question);
+                Intent viewQuestion = new Intent(ctx, ViewQuestionActivity.class);
+                viewQuestion.putExtra("question", question);
                 ctx.startActivity(viewQuestion);
 
 
@@ -109,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
             HttpHandler sh = new HttpHandler();
             //Making a request to URL and getting response
 
-            String url = "http://api.stackexchange.com/2.2/search/advanced?pagesize=10&order=desc&sort=votes&site=stackoverflow&title=" + query + "&page=" + pageCount + "&filter=!t)HnY7LX3Ce)AgPV-DgFuqjVyl_N_V0";
+            String url = "http://api.stackexchange.com/2.2/search/advanced?pagesize=10&order=desc&sort=votes&site=stackoverflow&title=" + query + "&page=" + pageCount + "&filter=!DDp24Ye4wFIqB1txVg6e77a3TUX.OeHXwIvj0PU08JVueK-NlKT";
             String jsonStr = sh.makeServiceCall(url);
 
             if (jsonStr != null) {
@@ -121,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
 
                     for (int i = 0; i < questionsArray.length(); i++) {
                         JSONObject questionObject = questionsArray.getJSONObject(i);
-                        int questionID = questionObject.getInt("question_id");
+                        long questionID = questionObject.getLong("question_id");
                         int score = questionObject.getInt("score");
                         int answerCount = questionObject.getInt("answer_count");
                         String title = questionObject.getString("title");
@@ -134,12 +131,13 @@ public class MainActivity extends AppCompatActivity {
                         Question question = new Question(questionID, score, answerCount, title, authorDisplayName);
                         question.setBody(body);
 
+                        ArrayList<Answer> answers = getAnswers(questionObject.getJSONArray("answers"));
+
+                        for (int j = 0; j < answers.size(); j++) {
+                            question.addAnswer(answers.get(j));
+                        }
+
                         questions.add(question);
-                    }
-
-                    for (int i = 0; i<questions.size();i++){
-                        Question question = questions.get(i);
-
                     }
 
                     if (questionsArray.length() == 0) {
@@ -182,11 +180,42 @@ public class MainActivity extends AppCompatActivity {
             if (adapter == null) {
                 adapter = new MyQuestionAdapter(MainActivity.this, questions);
                 questionListView.setAdapter(adapter);
-            } else if(pageCount == 1) {
+            } else if (pageCount == 1) {
                 questionListView.setAdapter(adapter);
             } else {
                 adapter.notifyDataSetChanged();
             }
+        }
+
+        protected ArrayList<Answer> getAnswers(JSONArray answersArray) {
+
+            ArrayList<Answer> answers = new ArrayList<>();
+
+            try {
+                for (int i = 0; i < answersArray.length(); i++) {
+                    JSONObject answerObject = answersArray.getJSONObject(i);
+                    long answerID = answerObject.getLong("answer_id");
+                    int score = answerObject.getInt("score");
+                    boolean isAccepted = answerObject.getBoolean("is_accepted");
+                    String body = answerObject.getString("body");
+                    String authorDisplayName = answerObject.getJSONObject("owner").optString("display_name");
+
+                    Answer answer = new Answer(answerID, score, isAccepted, body, authorDisplayName);
+
+                    //Log.v(TAG, Long.toString(answer.getAnswerID()) + " " + answer.getAuthorDisplayName());
+                    answers.add(answer);
+                }
+            } catch (final JSONException e) {
+                Log.e(TAG, "Json parsing error: " + e.getMessage());
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(), "Json parsing error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+
+            return answers;
         }
     }
 }

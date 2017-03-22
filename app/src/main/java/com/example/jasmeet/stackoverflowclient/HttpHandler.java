@@ -14,10 +14,10 @@ import java.net.URL;
 
 /**
  * Created by Jasmeet on 3/22/2017.
- *
+ * <p>
  * makeServiceCall() method takes the URL provided from the getQuestions class inside MainActivity to send a query to Stack Overflow's API.
  * The response received is converted to String using convertStreamToString.
- *
+ * <p>
  * Much of the code used here was learned on tutorialspoint.com
  */
 
