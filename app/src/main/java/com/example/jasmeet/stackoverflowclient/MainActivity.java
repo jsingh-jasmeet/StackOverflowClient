@@ -1,11 +1,14 @@
 package com.example.jasmeet.stackoverflowclient;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -22,6 +25,7 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
 
     private static int pageCount = 0;
+    private Context ctx;
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private ListView questionListView;
@@ -35,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ctx = this;
 
         final EditText searchEditText = (EditText) findViewById(R.id.search_edit_text);
         ImageButton searchImageButton = (ImageButton) findViewById(R.id.search_button);
@@ -68,6 +73,20 @@ public class MainActivity extends AppCompatActivity {
                 questionListView.smoothScrollToPosition(10 * (pageCount - 1));
             }
         });
+
+        questionListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+
+                Question question = questions.get(position);
+
+                Intent viewQuestion = new Intent(ctx,ViewQuestionActivity.class);
+                viewQuestion.putExtra("question",question);
+                ctx.startActivity(viewQuestion);
+
+
+            }
+        });
     }
 
     private class getQuestions extends AsyncTask<Void, Void, Void> {
@@ -90,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
             HttpHandler sh = new HttpHandler();
             //Making a request to URL and getting response
 
-            String url = "http://api.stackexchange.com/2.2/search/advanced?pagesize=10&order=desc&sort=votes&site=stackoverflow&title=" + query + "&page=" + pageCount;
+            String url = "http://api.stackexchange.com/2.2/search/advanced?pagesize=10&order=desc&sort=votes&site=stackoverflow&title=" + query + "&page=" + pageCount + "&filter=!t)HnY7LX3Ce)AgPV-DgFuqjVyl_N_V0";
             String jsonStr = sh.makeServiceCall(url);
 
             if (jsonStr != null) {
@@ -107,13 +126,20 @@ public class MainActivity extends AppCompatActivity {
                         int answerCount = questionObject.getInt("answer_count");
                         String title = questionObject.getString("title");
                         String authorDisplayName = questionObject.optJSONObject("owner").optString("display_name");
+                        String body = questionObject.optString("body");
 
                         title = StringEscapeUtils.unescapeXml(title);
                         authorDisplayName = StringEscapeUtils.unescapeXml(authorDisplayName);
 
                         Question question = new Question(questionID, score, answerCount, title, authorDisplayName);
+                        question.setBody(body);
 
                         questions.add(question);
+                    }
+
+                    for (int i = 0; i<questions.size();i++){
+                        Question question = questions.get(i);
+
                     }
 
                     if (questionsArray.length() == 0) {
@@ -153,8 +179,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
-            if (pageCount == 1) {
+            if (adapter == null) {
                 adapter = new MyQuestionAdapter(MainActivity.this, questions);
+                questionListView.setAdapter(adapter);
+            } else if(pageCount == 1) {
                 questionListView.setAdapter(adapter);
             } else {
                 adapter.notifyDataSetChanged();
