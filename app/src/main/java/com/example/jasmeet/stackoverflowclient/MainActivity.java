@@ -4,10 +4,12 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -19,10 +21,15 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static int pageCount = 0;
+
     private static final String TAG = MainActivity.class.getSimpleName();
     private ListView questionListView;
     ArrayList<Question> questions;
     private String query;
+    TextView getMoreResultsTextView;
+    View footer;
+    MyQuestionAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,24 +42,32 @@ public class MainActivity extends AppCompatActivity {
         questions = new ArrayList<>();
         questionListView = (ListView) findViewById(R.id.question_list_view);
 
+        footer = LayoutInflater.from(getBaseContext()).inflate(R.layout.get_more_results_textview, null);
+
         searchImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (searchEditText.getText().toString().compareTo("") == 0) {
                     Toast.makeText(getBaseContext(), R.string.empty_search_box, Toast.LENGTH_LONG).show();
                 } else {
+
+                    Log.v(TAG, "In Listener");
+
                     query = searchEditText.getText().toString().replaceAll(" ", "%20");
+                    pageCount = 1;
                     new getQuestions().execute();
                 }
             }
         });
-    }
 
-    private void displayQuestions() {
-        questions = new ArrayList<>();
-        questionListView = (ListView) findViewById(R.id.question_list_view);
-        MyQuestionAdapter adapter = new MyQuestionAdapter(this, questions);
-        questionListView.setAdapter(adapter);
+        footer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                pageCount++;
+                new getQuestions().execute();
+                questionListView.smoothScrollToPosition(10 * (pageCount - 1));
+            }
+        });
     }
 
     private class getQuestions extends AsyncTask<Void, Void, Void> {
@@ -60,8 +75,11 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            if(questions!=null) {
+            Log.v(TAG, "In PreExecute");
+            if (questions != null && pageCount == 1) {
                 questions.clear();
+                footer.setVisibility(View.GONE);
+
             }
             Toast.makeText(MainActivity.this, "Fetching questions...", Toast.LENGTH_LONG).show();
         }
@@ -72,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
             HttpHandler sh = new HttpHandler();
             //Making a request to URL and getting response
 
-            String url = "http://api.stackexchange.com/2.2/search/advanced?pagesize=20&order=desc&sort=votes&site=stackoverflow&title=" + query;
+            String url = "http://api.stackexchange.com/2.2/search/advanced?pagesize=10&order=desc&sort=votes&site=stackoverflow&title=" + query + "&page=" + pageCount;
             String jsonStr = sh.makeServiceCall(url);
 
             if (jsonStr != null) {
@@ -97,24 +115,34 @@ public class MainActivity extends AppCompatActivity {
 
                         questions.add(question);
                     }
+
+                    if (questionsArray.length() == 0) {
+                        Toast.makeText(getApplicationContext(), "The search did not return any results", Toast.LENGTH_LONG).show();
+                    } else {
+                        runOnUiThread(new Runnable() {
+                            public void run() {
+                                footer.setVisibility(View.VISIBLE);
+                                questionListView.addFooterView(footer);
+                            }
+                        });
+                    }
+
                 } catch (final JSONException e) {
                     Log.e(TAG, "Json parsing error: " + e.getMessage());
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(getApplicationContext(),
-                                    "Json parsing error: " + e.getMessage(),
-                                    Toast.LENGTH_LONG).show();
+                            Toast.makeText(getApplicationContext(), "Json parsing error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                         }
                     });
                 }
             } else {
-                Log.e(TAG, "Couldn't get json from server.");
+                Log.e(TAG, "Couldn't get questions from server.");
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         Toast.makeText(getApplicationContext(),
-                                "Couldn't get json from server. Check LogCat for possible errors!",
+                                "Couldn't get questions from Server. Try again later.",
                                 Toast.LENGTH_LONG).show();
                     }
                 });
@@ -125,8 +153,12 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
-            MyQuestionAdapter adapter = new MyQuestionAdapter(MainActivity.this, questions);
-            questionListView.setAdapter(adapter);
+            if (pageCount == 1) {
+                adapter = new MyQuestionAdapter(MainActivity.this, questions);
+                questionListView.setAdapter(adapter);
+            } else {
+                adapter.notifyDataSetChanged();
+            }
         }
     }
 }

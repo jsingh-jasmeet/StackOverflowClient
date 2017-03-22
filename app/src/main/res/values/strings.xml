@@ -10,4 +10,6 @@
     <string name="asked_by">asked by</string>
 
     <string name="empty_search_box">Please enter something in the search field</string>
+
+    <string name="get_more_results">Get more results</string>
 </resources>
