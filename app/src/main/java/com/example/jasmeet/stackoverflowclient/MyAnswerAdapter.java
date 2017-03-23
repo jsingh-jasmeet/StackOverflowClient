@@ -10,7 +10,11 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.jasmeet.stackoverflowclient.Models.Answer;
+
 import java.util.ArrayList;
+
+import us.feras.mdv.MarkdownView;
 
 /**
  * Created by Jasmeet on 3/23/2017.
@@ -36,17 +40,19 @@ public class MyAnswerAdapter extends ArrayAdapter<Answer> {
 
         TextView authorDisplayNameTextView = (TextView) listItemView.findViewById(R.id.answer_list_item_display_name);
         TextView scoreTextView = (TextView) listItemView.findViewById(R.id.answer_list_item_score);
-        TextView bodyTextView = (TextView) listItemView.findViewById(R.id.answer_list_item_body);
+        MarkdownView bodyTextView = (MarkdownView) listItemView.findViewById(R.id.answer_list_item_body);
         ImageView isAcceptedImageView = (ImageView) listItemView.findViewById(R.id.answer_list_item_accepted);
 
         if (currentAnswer.getAuthorDisplayName() != null)
             authorDisplayNameTextView.setText(currentAnswer.getAuthorDisplayName());
         else
-            authorDisplayNameTextView.setText("user_not_found");
+            authorDisplayNameTextView.setText(R.string.unknown_user);
         scoreTextView.setText(Integer.toString(currentAnswer.getScore()));
-        bodyTextView.setText(currentAnswer.getBody());
+        bodyTextView.loadMarkdown(currentAnswer.getBody(), "file:///android_asset/classic.css");
         if (currentAnswer.isAccepted()) {
             isAcceptedImageView.setVisibility(View.VISIBLE);
+        } else {
+            isAcceptedImageView.setVisibility(View.GONE);
         }
 
         return listItemView;

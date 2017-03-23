@@ -16,4 +16,6 @@
     <string name="answered_by">answered by</string>
 
     <string name="accepted_answer">Accepted Answer</string>
+
+    <string name="unknown_user">unknown</string>
 </resources>

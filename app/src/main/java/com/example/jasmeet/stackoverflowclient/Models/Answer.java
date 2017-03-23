@@ -1,4 +1,4 @@
-package com.example.jasmeet.stackoverflowclient;
+package com.example.jasmeet.stackoverflowclient.Models;
 
 import android.os.Parcel;
 import android.os.Parcelable;

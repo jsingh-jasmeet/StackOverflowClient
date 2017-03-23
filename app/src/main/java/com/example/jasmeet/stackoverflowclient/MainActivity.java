@@ -14,11 +14,16 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.example.jasmeet.stackoverflowclient.Models.Answer;
+import com.example.jasmeet.stackoverflowclient.Models.Question;
+
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -55,7 +60,13 @@ public class MainActivity extends AppCompatActivity {
 
                     Log.v(TAG, "In Listener");
 
-                    query = searchEditText.getText().toString().replaceAll(" ", "%20");
+                    try {
+                        query = URLEncoder.encode(searchEditText.getText().toString(), "UTF-8");
+                    } catch (UnsupportedEncodingException e) {
+                        query = searchEditText.getText().toString().replaceAll(" ", "%20");
+                    }
+
+                    Log.v(TAG, query);
                     pageCount = 1;
                     new getQuestions().execute();
                 }
@@ -91,7 +102,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            Log.v(TAG, "In PreExecute");
             if (questions != null && pageCount == 1) {
                 questions.clear();
                 footer.setVisibility(View.GONE);
@@ -110,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
             String jsonStr = sh.makeServiceCall(url);
 
             if (jsonStr != null) {
-                Log.v(TAG, jsonStr);
+                //Log.v(TAG, jsonStr);
                 try {
                     JSONObject root = new JSONObject(jsonStr);
 

@@ -43,8 +43,8 @@
             android:id="@+id/answer_list_item_left_column"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:layout_marginRight="16dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
             android:orientation="vertical">
 
             <TextView
@@ -75,13 +75,13 @@
                 tools:visibility="visible" />
         </LinearLayout>
 
-        <TextView
+        <us.feras.mdv.MarkdownView
             android:id="@+id/answer_list_item_body"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textColor="@android:color/black"
-            android:textSize="12sp"
+
             tools:text="Body" />
     </LinearLayout>
 

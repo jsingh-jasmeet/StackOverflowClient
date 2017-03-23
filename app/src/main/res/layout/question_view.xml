@@ -6,10 +6,25 @@
     android:orientation="vertical"
     tools:context="com.example.jasmeet.stackoverflowclient.ViewQuestionActivity">
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/view_question_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:textColor="@android:color/holo_red_dark"
+        android:textSize="20sp"
+        tools:text="This is an example question" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@android:color/darker_gray"></View>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:paddingLeft="8dp"
         android:paddingRight="8dp"
@@ -30,22 +45,6 @@
 
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/view_question_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        android:textColor="@android:color/holo_red_dark"
-        android:textSize="20sp"
-        tools:text="This is an example question" />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="2dp"
-        android:background="@android:color/darker_gray"></View>
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -59,8 +58,8 @@
             android:id="@+id/question_list_item_left_column"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:layout_marginRight="16dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
             android:orientation="vertical">
 
             <TextView
@@ -97,13 +96,12 @@
                 android:text="@string/answers" />
         </LinearLayout>
 
-        <TextView
+        <us.feras.mdv.MarkdownView
             android:id="@+id/view_question_body"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textColor="@android:color/black"
-            android:textSize="12sp"
             tools:text="Body" />
     </LinearLayout>
 
