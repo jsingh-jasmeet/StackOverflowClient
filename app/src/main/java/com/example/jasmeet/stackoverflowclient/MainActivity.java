@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -95,6 +96,13 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+        //Check if no view has focus to hide keyboard
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 
     private class getQuestions extends AsyncTask<Void, Void, Void> {
@@ -134,11 +142,12 @@ public class MainActivity extends AppCompatActivity {
                         String title = questionObject.getString("title");
                         String authorDisplayName = questionObject.optJSONObject("owner").optString("display_name");
                         String body = questionObject.optString("body");
+                        String questionLink = questionObject.getString("link");
 
                         title = StringEscapeUtils.unescapeXml(title);
                         authorDisplayName = StringEscapeUtils.unescapeXml(authorDisplayName);
 
-                        Question question = new Question(questionID, score, answerCount, title, authorDisplayName);
+                        Question question = new Question(questionID, score, answerCount, title, authorDisplayName, questionLink);
                         question.setBody(body);
 
                         ArrayList<Answer> answers = getAnswers(questionObject.getJSONArray("answers"));

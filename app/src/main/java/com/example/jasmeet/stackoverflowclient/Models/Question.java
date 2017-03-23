@@ -40,8 +40,9 @@ public class Question implements Parcelable {
     private String mAuthorDisplayName;
     private String mBody;
     private ArrayList<Answer> mAnswers;
+    private String mQuestionLink;
 
-    public Question(long questionID, int score, int answerCount, String title, String authorDisplayName) {
+    public Question(long questionID, int score, int answerCount, String title, String authorDisplayName, String questionLink) {
         mQuestionID = questionID;
         mScore = score;
         mAnswerCount = answerCount;
@@ -49,6 +50,7 @@ public class Question implements Parcelable {
         mAuthorDisplayName = StringEscapeUtils.unescapeHtml4(authorDisplayName);
         mBody = "";
         mAnswers = new ArrayList<>();
+        mQuestionLink = questionLink;
     }
 
     private Question(Parcel in) {
@@ -62,6 +64,7 @@ public class Question implements Parcelable {
             mAnswers = new ArrayList<>();
         }
         in.readTypedList(mAnswers, Answer.CREATOR);
+        mQuestionLink = in.readString();
     }
 
     public void addAnswer(Answer a) {
@@ -97,6 +100,10 @@ public class Question implements Parcelable {
         Log.v("Question: ", mBody);
     }
 
+    public String getQuestionLink() {
+        return mQuestionLink;
+    }
+
     public Answer getAnswerAt(int pos) {
         if (pos < mAnswers.size())
             return mAnswers.get(pos);
@@ -123,7 +130,7 @@ public class Question implements Parcelable {
         parcel.writeString(mAuthorDisplayName);
         parcel.writeString(mBody);
         parcel.writeTypedList(mAnswers);
-
+        parcel.writeString(mQuestionLink);
     }
 
     @Override
