@@ -105,6 +105,12 @@ public class Question implements Parcelable {
     }
 
     public ArrayList<Answer> getAllAnswers() {
+
+        this.getSortedAnswers();
+
+
+        Log.v("Question", Integer.toString(mAnswers.size()));
+
         return mAnswers;
     }
 
@@ -123,5 +129,57 @@ public class Question implements Parcelable {
     @Override
     public int describeContents() {
         return 0;
+    }
+
+    public void getSortedAnswers() {
+
+        if (mAnswers.size() != 0) {
+            int number = mAnswers.size();
+            quicksort(0, number - 1);
+        }
+    }
+
+    private void quicksort(int low, int high) {
+        int i = low, j = high;
+        // Get the pivot element from the middle of the list
+        int pivot = mAnswers.get(low + (high - low) / 2).getScore();
+
+        // Divide into two lists
+        while (i <= j) {
+            // If the current value from the left list is smaller than the pivot
+            // element then get the next element from the left list
+            while (mAnswers.get(i).getScore() > pivot) {
+                i++;
+            }
+            // If the current value from the right list is larger than the pivot
+            // element then get the next element from the right list
+            while (mAnswers.get(j).getScore() < pivot) {
+                j--;
+            }
+
+            // If we have found a value in the left list which is larger than
+            // the pivot element and if we have found a value in the right list
+            // which is smaller than the pivot element then we exchange the
+            // values.
+            // As we are done we can increase i and j
+            if (i <= j) {
+                exchange(i, j);
+                i++;
+                j--;
+            }
+        }
+        // Recursion
+        if (low < j)
+            quicksort(low, j);
+        if (i < high)
+            quicksort(i, high);
+    }
+
+    private void exchange(int i, int j) {
+        Answer temp = mAnswers.get(j);
+        mAnswers.remove(j);
+        mAnswers.add(j, mAnswers.get(i));
+        mAnswers.remove(i);
+        mAnswers.add(i, temp);
     }
 }
