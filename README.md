@@ -1,5 +1,5 @@
 # StackOverflowClient
-This is a simple Stack Overflow Client composed of two activities.
+This is a simple Stack Overflow client Android app composed of two activities.
 
 The MainActivity includes a search field, a search button, and a listview below the two. 
 
