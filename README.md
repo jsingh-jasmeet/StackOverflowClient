@@ -8,3 +8,5 @@ Entering a query in the search field and hitting the search button retrieves the
 Each result includes the question title, the score of each question, the number of answers on each question, and the author of the question. Tapping a result will take the user to the ViewQuestionActivity.
 
 In the ViewQuestionActivity, users can read the body of the question, as well as all answers to that question. Each Answer displays the answer score, the body of the answer, and the author of the answer.
+
+![alt tag](http://i64.tinypic.com/s667vb.jpg)
