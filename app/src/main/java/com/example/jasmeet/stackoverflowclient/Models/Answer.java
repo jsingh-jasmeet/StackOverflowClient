@@ -2,6 +2,10 @@ package com.example.jasmeet.stackoverflowclient.Models;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Created by Jasmeet on 3/22/2017.
@@ -25,12 +29,17 @@ public class Answer implements Parcelable {
     private String mBody;
     private String mAuthorDisplayName;
 
-    public Answer(long answerID, int score, boolean isAccepted, String body, String authorDisplayName) {
-        mAnswerID = answerID;
-        mScore = score;
-        mIsAccepted = isAccepted;
-        mBody = body;
-        mAuthorDisplayName = authorDisplayName;
+    public Answer(JSONObject answerObject) {
+
+        try {
+            this.mAnswerID = answerObject.getLong("answer_id");
+            this.mScore = answerObject.getInt("score");
+            this.mIsAccepted = answerObject.getBoolean("is_accepted");
+            this.mBody = answerObject.getString("body");
+            this.mAuthorDisplayName = answerObject.getJSONObject("owner").optString("display_name");
+        } catch (JSONException e) {
+            Log.e("Answer.java", "JSON Parsing Error: " + e.getMessage());
+        }
     }
 
     private Answer(Parcel in) {

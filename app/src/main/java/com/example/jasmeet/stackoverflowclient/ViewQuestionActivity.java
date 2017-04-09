@@ -43,7 +43,6 @@ public class ViewQuestionActivity extends AppCompatActivity {
         answerListView.setAdapter(adapter);
 
         answerListView.addHeaderView(questionView);
-
     }
 
     private void setUpViews() {

@@ -8,17 +8,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.example.jasmeet.stackoverflowclient.Models.Answer;
 import com.example.jasmeet.stackoverflowclient.Models.Question;
 
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -96,13 +93,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
-        //Check if no view has focus to hide keyboard
-        View view = this.getCurrentFocus();
-        if (view != null) {
-            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-        }
     }
 
     private class getQuestions extends AsyncTask<Void, Void, Void> {
@@ -113,7 +103,6 @@ public class MainActivity extends AppCompatActivity {
             if (questions != null && pageCount == 1) {
                 questions.clear();
                 footer.setVisibility(View.GONE);
-
             }
             Toast.makeText(MainActivity.this, "Fetching questions...", Toast.LENGTH_LONG).show();
         }
@@ -124,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
             HttpHandler sh = new HttpHandler();
             //Making a request to URL and getting response
 
-            String url = "http://api.stackexchange.com/2.2/search/advanced?pagesize=10&order=desc&sort=votes&site=stackoverflow&title=" + query + "&page=" + pageCount + "&filter=!DDp24Ye4wFIqB1txVg6e77a3TUX.OeHXwIvj0PU08JVueK-NlKT";
+            String url = "http://api.stackexchange.com/2.2/search/advanced?pagesize=10&order=desc&sort=votes&site=stackoverflow&q=" + query + "&page=" + pageCount + "&filter=!DDp24Ye4wFIqB1txVg6e77a3TUX.OeHXwIvj0PU08JVueK-NlKT";
             String jsonStr = sh.makeServiceCall(url);
 
             if (jsonStr != null) {
@@ -136,25 +125,8 @@ public class MainActivity extends AppCompatActivity {
 
                     for (int i = 0; i < questionsArray.length(); i++) {
                         JSONObject questionObject = questionsArray.getJSONObject(i);
-                        long questionID = questionObject.getLong("question_id");
-                        int score = questionObject.getInt("score");
-                        int answerCount = questionObject.getInt("answer_count");
-                        String title = questionObject.getString("title");
-                        String authorDisplayName = questionObject.optJSONObject("owner").optString("display_name");
-                        String body = questionObject.optString("body");
-                        String questionLink = questionObject.getString("link");
 
-                        title = StringEscapeUtils.unescapeXml(title);
-                        authorDisplayName = StringEscapeUtils.unescapeXml(authorDisplayName);
-
-                        Question question = new Question(questionID, score, answerCount, title, authorDisplayName, questionLink);
-                        question.setBody(body);
-
-                        ArrayList<Answer> answers = getAnswers(questionObject.getJSONArray("answers"));
-
-                        for (int j = 0; j < answers.size(); j++) {
-                            question.addAnswer(answers.get(j));
-                        }
+                        Question question = new Question(questionObject);
 
                         questions.add(question);
                     }
@@ -206,35 +178,5 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        protected ArrayList<Answer> getAnswers(JSONArray answersArray) {
-
-            ArrayList<Answer> answers = new ArrayList<>();
-
-            try {
-                for (int i = 0; i < answersArray.length(); i++) {
-                    JSONObject answerObject = answersArray.getJSONObject(i);
-                    long answerID = answerObject.getLong("answer_id");
-                    int score = answerObject.getInt("score");
-                    boolean isAccepted = answerObject.getBoolean("is_accepted");
-                    String body = answerObject.getString("body");
-                    String authorDisplayName = answerObject.getJSONObject("owner").optString("display_name");
-
-                    Answer answer = new Answer(answerID, score, isAccepted, body, authorDisplayName);
-
-                    //Log.v(TAG, Long.toString(answer.getAnswerID()) + " " + answer.getAuthorDisplayName());
-                    answers.add(answer);
-                }
-            } catch (final JSONException e) {
-                Log.e(TAG, "Json parsing error: " + e.getMessage());
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(getApplicationContext(), "Json parsing error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                });
-            }
-
-            return answers;
-        }
     }
 }

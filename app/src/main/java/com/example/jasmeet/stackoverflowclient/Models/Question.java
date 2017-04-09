@@ -5,7 +5,9 @@ import android.os.Parcelable;
 import android.util.Log;
 
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.unbescape.csv.CsvEscape;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -22,6 +24,8 @@ import java.util.ArrayList;
  */
 
 public class Question implements Parcelable {
+
+
     public static final Parcelable.Creator<Question> CREATOR = new Parcelable.Creator<Question>() {
         @Override
         public Question createFromParcel(Parcel source) {
@@ -42,15 +46,36 @@ public class Question implements Parcelable {
     private ArrayList<Answer> mAnswers;
     private String mQuestionLink;
 
-    public Question(long questionID, int score, int answerCount, String title, String authorDisplayName, String questionLink) {
-        mQuestionID = questionID;
-        mScore = score;
-        mAnswerCount = answerCount;
-        mTitle = StringEscapeUtils.unescapeHtml4(title);
-        mAuthorDisplayName = StringEscapeUtils.unescapeHtml4(authorDisplayName);
-        mBody = "";
-        mAnswers = new ArrayList<>();
-        mQuestionLink = questionLink;
+    public Question(JSONObject questionObject) {
+
+        try {
+
+            this.mQuestionID = questionObject.getLong("question_id");
+            this.mScore = questionObject.getInt("score");
+            this.mAnswerCount = questionObject.getInt("answer_count");
+            this.mTitle = questionObject.getString("title");
+            this.mAuthorDisplayName = questionObject.optJSONObject("owner").optString("display_name");
+            this.mBody = questionObject.optString("body");
+            this.mQuestionLink = questionObject.getString("link");
+
+            this.mTitle = StringEscapeUtils.unescapeXml(this.mTitle);
+            this.mAuthorDisplayName = StringEscapeUtils.unescapeXml(this.mAuthorDisplayName);
+
+            this.mAnswers = new ArrayList<>();
+
+            JSONArray answersArray = questionObject.getJSONArray("answers");
+
+            for (int j = 0; j < answersArray.length(); j++) {
+                JSONObject answerObject = answersArray.getJSONObject(j);
+
+                Answer answer = new Answer(answerObject);
+
+                this.addAnswer(answer);
+            }
+
+        } catch (final JSONException e) {
+            Log.e("Question.java", "Json parsing error: " + e.getMessage());
+        }
     }
 
     private Question(Parcel in) {
@@ -95,20 +120,8 @@ public class Question implements Parcelable {
         return mBody;
     }
 
-    public void setBody(String body) {
-        mBody = CsvEscape.unescapeCsv(body);
-        Log.v("Question: ", mBody);
-    }
-
     public String getQuestionLink() {
         return mQuestionLink;
-    }
-
-    public Answer getAnswerAt(int pos) {
-        if (pos < mAnswers.size())
-            return mAnswers.get(pos);
-        else
-            return null;
     }
 
     public ArrayList<Answer> getAllAnswers() {
