@@ -12,6 +12,7 @@ import org.json.JSONObject;
  */
 
 public class Answer implements Parcelable {
+
     public static final Parcelable.Creator<Answer> CREATOR = new Parcelable.Creator<Answer>() {
         @Override
         public Answer createFromParcel(Parcel source) {

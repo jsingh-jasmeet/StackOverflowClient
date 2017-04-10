@@ -55,16 +55,12 @@ public class MainActivity extends AppCompatActivity {
                 if (searchEditText.getText().toString().compareTo("") == 0) {
                     Toast.makeText(getBaseContext(), R.string.empty_search_box, Toast.LENGTH_LONG).show();
                 } else {
-
-                    Log.v(TAG, "In Listener");
-
                     try {
                         query = URLEncoder.encode(searchEditText.getText().toString(), "UTF-8");
                     } catch (UnsupportedEncodingException e) {
                         query = searchEditText.getText().toString().replaceAll(" ", "%20");
                     }
 
-                    Log.v(TAG, query);
                     pageCount = 1;
                     new getQuestions().execute();
                 }
@@ -83,14 +79,11 @@ public class MainActivity extends AppCompatActivity {
         questionListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-
                 Question question = questions.get(position);
 
                 Intent viewQuestion = new Intent(ctx, ViewQuestionActivity.class);
                 viewQuestion.putExtra("question", question);
                 ctx.startActivity(viewQuestion);
-
-
             }
         });
     }
@@ -104,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
                 questions.clear();
                 footer.setVisibility(View.GONE);
             }
-            Toast.makeText(MainActivity.this, "Fetching questions...", Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.this, "Fetching questions...", Toast.LENGTH_SHORT).show();
         }
 
         @Override
@@ -113,21 +106,33 @@ public class MainActivity extends AppCompatActivity {
             HttpHandler sh = new HttpHandler();
             //Making a request to URL and getting response
 
+            CacheHandler ch = new CacheHandler(ctx);
+
             String url = "http://api.stackexchange.com/2.2/search/advanced?pagesize=10&order=desc&sort=votes&site=stackoverflow&q=" + query + "&page=" + pageCount + "&filter=!DDp24Ye4wFIqB1txVg6e77a3TUX.OeHXwIvj0PU08JVueK-NlKT";
             String jsonStr = sh.makeServiceCall(url);
 
+            if (jsonStr == null) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(),
+                                "Couldn't get questions from Server. Looking in cache",
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
+                jsonStr = ch.readJsonStringFromCache(query, pageCount);
+            }
+
             if (jsonStr != null) {
-                //Log.v(TAG, jsonStr);
+
+                ch.writeJsonStringToCache(query, jsonStr, pageCount);
                 try {
                     JSONObject root = new JSONObject(jsonStr);
-
                     JSONArray questionsArray = root.getJSONArray("items");
 
                     for (int i = 0; i < questionsArray.length(); i++) {
                         JSONObject questionObject = questionsArray.getJSONObject(i);
-
                         Question question = new Question(questionObject);
-
                         questions.add(question);
                     }
 
@@ -141,7 +146,6 @@ public class MainActivity extends AppCompatActivity {
                             }
                         });
                     }
-
                 } catch (final JSONException e) {
                     Log.e(TAG, "Json parsing error: " + e.getMessage());
                     runOnUiThread(new Runnable() {
@@ -152,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
                     });
                 }
             } else {
-                Log.e(TAG, "Couldn't get questions from server.");
+                Log.e(TAG, "Couldn't find data in server.");
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -177,6 +181,5 @@ public class MainActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
             }
         }
-
     }
 }

@@ -25,7 +25,6 @@ import java.util.ArrayList;
 
 public class Question implements Parcelable {
 
-
     public static final Parcelable.Creator<Question> CREATOR = new Parcelable.Creator<Question>() {
         @Override
         public Question createFromParcel(Parcel source) {
@@ -127,9 +126,6 @@ public class Question implements Parcelable {
     public ArrayList<Answer> getAllAnswers() {
 
         this.getSortedAnswers();
-
-
-        Log.v("Question", Integer.toString(mAnswers.size()));
 
         return mAnswers;
     }

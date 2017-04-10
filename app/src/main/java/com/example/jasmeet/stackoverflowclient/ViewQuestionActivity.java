@@ -1,6 +1,5 @@
 package com.example.jasmeet.stackoverflowclient;
 
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -19,8 +18,6 @@ import us.feras.mdv.MarkdownView;
 
 public class ViewQuestionActivity extends AppCompatActivity {
 
-    private static final String TAG = ViewQuestionActivity.class.getSimpleName();
-    private Context ctx;
     private Question question;
     private LinearLayout questionView;
     private ListView answerListView;
